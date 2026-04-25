@@ -54,7 +54,33 @@ public class Pilha<E> {
 	 */
 	public Pilha<E> subPilha(int numItens) {
 		
-		// TODO
-		return null;
+		Pilha<E> pilhaTemp = new Pilha<>();
+		Pilha<E> subPilhaResultado = new Pilha<>();
+		
+		int contador = 0;
+		
+		// conta os elementos da pilha
+		Celula<E> atual = topo;
+		while (atual != fundo) {
+			contador++;
+			atual = atual.getProximo();
+		}
+		
+		if (numItens > contador) {
+			throw new IllegalArgumentException("A pilha não contém " + numItens + " elementos.");
+		}
+		
+		atual = topo;
+		for (int i = 0; i < numItens; i++) {
+			pilhaTemp.empilhar(atual.getItem());
+			atual = atual.getProximo();
+		}
+		
+		// transfere os elementos da pilha temporaria pra subPilha
+		while (!pilhaTemp.vazia()) {
+			subPilhaResultado.empilhar(pilhaTemp.desempilhar());
+		}
+		
+		return subPilhaResultado;
 	}
 }
