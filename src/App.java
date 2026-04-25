@@ -10,6 +10,9 @@ public class App {
 	/** Nome do arquivo de dados. O arquivo deve estar localizado na raiz do projeto */
     static String nomeArquivoDados;
     
+    /** Nome do arquivo de pedidos. O arquivo deve estar localizado na raiz do projeto */
+    static String nomeArquivoPedidos = "pedidos.txt";
+    
     /** Scanner para leitura de dados do teclado */
     static Scanner teclado;
 
@@ -21,6 +24,9 @@ public class App {
 
     /** Pilha de pedidos */
     static Pilha<Pedido> pilhaPedidos = new Pilha<>();
+    
+    /** Pilha de produtos mais recentemente pedidos */
+    static Pilha<Produto> pilhaProdutosRecentes = new Pilha<>();
         
     static void limparTela() {
         System.out.print("\033[H\033[2J");
@@ -101,7 +107,9 @@ public class App {
     	} catch (IOException excecaoArquivo) {
     		produtosCadastrados = null;
     	} finally {
+    		if (arquivo != null) {
     		arquivo.close();
+    	}
     	}
     	
     	return produtosCadastrados;
@@ -208,12 +216,47 @@ public class App {
      */
     public static void finalizarPedido(Pedido pedido) {
     	
-    	// TODO
+    	cabecalho();
+    	if (pedido == null) {
+    		System.out.println("Nenhum pedido foi iniciado!");
+    	} else if (pedido.getQuantosProdutos() == 0) {
+    		System.out.println("Não há produtos no pedido!");
+    	} else {
+    		pilhaPedidos.empilhar(pedido);
+    		
+    		Produto[] produtosPedido = pedido.getProdutos();
+    		for (int i = 0; i < pedido.getQuantosProdutos(); i++) {
+    			pilhaProdutosRecentes.empilhar(produtosPedido[i]);
+    		}
+    		
+    		System.out.println("Pedido finalizado com sucesso!");
+    		System.out.println(pedido.toString());
+    	}
     }
     
     public static void listarProdutosPedidosRecentes() {
     	
-    	// TODO
+    	cabecalho();
+    	if (pilhaProdutosRecentes.vazia()) {
+    		System.out.println("Não há produtos em pedidos recentes.");
+    	} else {
+    		System.out.println("Produtos mais recentemente pedidos:");
+    		Pilha<Produto> pilhaTemp = new Pilha<>();
+    		int indice = 1;
+    		
+    		// Desempilhar e armazenar temporariamente
+    		while (!pilhaProdutosRecentes.vazia()) {
+    			Produto produto = pilhaProdutosRecentes.desempilhar();
+    			System.out.println(indice + " - " + produto.toString());
+    			pilhaTemp.empilhar(produto);
+    			indice++;
+    		}
+    		
+    		// Restaurar a pilha original
+    		while (!pilhaTemp.vazia()) {
+    			pilhaProdutosRecentes.empilhar(pilhaTemp.desempilhar());
+    		}
+    	}
     }
     
 	public static void main(String[] args) {
