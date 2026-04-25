@@ -159,4 +159,8 @@ public class Pedido implements Comparable<Pedido>{
     public Produto[] getProdutos() {
     	return produtos;
     }
+    
+    public int getFormaPagamento() {
+    	return formaDePagamento;
+    }
 }
