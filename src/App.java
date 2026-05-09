@@ -108,8 +108,8 @@ public class App {
     		produtosCadastrados = null;
     	} finally {
     		if (arquivo != null) {
-    		arquivo.close();
-    	}
+    			arquivo.close();
+    		}
     	}
     	
     	return produtosCadastrados;
@@ -259,10 +259,190 @@ public class App {
     	}
     }
     
+    public static void testarPilhaComMatricula() {
+    	
+    	cabecalho();
+    	System.out.println("\n=== TESTE DA PILHA COM MATRÍCULA ===");
+    	
+    	// usei meu código pessoa
+    	String matricula = "1463705";
+    	Pilha<Integer> pilhMatricula = new Pilha<>();
+    	
+    	boolean[] digitosUsados = new boolean[10];
+    	int[] digitosUnicos = new int[10];
+    	int quantDigitosUnicos = 0;
+    	
+    	for (int i = 0; i < matricula.length(); i++) {
+    		int digito = Character.getNumericValue(matricula.charAt(i));
+    		if (!digitosUsados[digito]) {
+    			digitosUsados[digito] = true;
+    			digitosUnicos[quantDigitosUnicos++] = digito;
+    		}
+    	}
+    	
+    	System.out.println("\nMatrícula: " + matricula);
+    	System.out.print("Dígitos únicos: ");
+    	for (int i = 0; i < quantDigitosUnicos; i++) {
+    		System.out.print(digitosUnicos[i]);
+    		if (i < quantDigitosUnicos - 1) System.out.print(", ");
+    	}
+    	System.out.println();
+    	
+    	System.out.println("\n--- EMPILHANDO DÍGITOS ---");
+    	for (int i = 0; i < quantDigitosUnicos; i++) {
+    		pilhMatricula.empilhar(digitosUnicos[i]);
+    		System.out.println("Empilhado: " + digitosUnicos[i]);
+    	}
+    	
+    	System.out.println("\n--- CONTEÚDO ATUAL DA PILHA (do topo para o fundo) ---");
+    	Pilha<Integer> pilhaAux = new Pilha<>();
+    	int indice = 1;
+    	while (!pilhMatricula.vazia()) {
+    		int item = pilhMatricula.desempilhar();
+    		System.out.println("Posição " + indice + ": " + item);
+    		pilhaAux.empilhar(item);
+    		indice++;
+    	}
+    	
+    	while (!pilhaAux.vazia()) {
+    		pilhMatricula.empilhar(pilhaAux.desempilhar());
+    	}
+    	
+    	System.out.println("\n--- TESTE DE DESEMPILHAR ---");
+    	for (int i = 0; i < 3 && !pilhMatricula.vazia(); i++) {
+    		int desempilhado = pilhMatricula.desempilhar();
+    		System.out.println("Desempilhado: " + desempilhado);
+    	}
+    	
+    	System.out.println("\nPilha vazia após desempilhar 3 itens? " + pilhMatricula.vazia());
+    	System.out.println("\n=== FIM DO TESTE ===");
+    }
+    
+
+    public static void salvarPedidos(String nomeArquivo) {
+    	
+    	try {
+    		// cria lista temporária
+    		Pilha<Pedido> pilhaTemp = new Pilha<>();
+    		StringBuilder conteudoArquivo = new StringBuilder();
+    		
+    		// Desempilhar 
+    		while (!pilhaPedidos.vazia()) {
+    			Pedido pedido = pilhaPedidos.desempilhar();
+    			conteudoArquivo.append(gerarLinhaTextoDosPedidos(pedido)).append("\n");
+    			pilhaTemp.empilhar(pedido);
+    		}
+    		
+    		// vira a pilha original denovo
+    		while (!pilhaTemp.vazia()) {
+    			pilhaPedidos.empilhar(pilhaTemp.desempilhar());
+    		}
+    		
+    		if (conteudoArquivo.length() > 0) {
+    			salvarEmArquivo(nomeArquivo, conteudoArquivo.toString());
+    		}
+    		
+    	} catch (Exception e) {
+    		System.err.println("Erro ao salvar pedidos: " + e.getMessage());
+    	}
+    }
+    
+    private static String gerarLinhaTextoDosPedidos(Pedido pedido) {
+    	
+    	StringBuilder linha = new StringBuilder();
+    	linha.append(pedido.getIdPedido()).append(";");
+    	linha.append(pedido.getDataPedido()).append(";");
+    	linha.append(pedido.getFormaDePagamento()).append(";");
+    	linha.append(pedido.getQuantosProdutos()).append(";");
+    	
+    	Produto[] produtos = pedido.getProdutos();
+    	for (int i = 0; i < pedido.getQuantosProdutos(); i++) {
+    		linha.append(produtos[i].hashCode());
+    		if (i < pedido.getQuantosProdutos() - 1) {
+    			linha.append(";");
+    		}
+    	}
+    	
+    	return linha.toString();
+    }
+    
+    public static void carregarPedidos(String nomeArquivo) {
+    	
+    	Scanner arquivo = null;
+    	
+    	try {
+    		arquivo = new Scanner(new File(nomeArquivo), Charset.forName("UTF-8"));
+    		
+    		while (arquivo.hasNextLine()) {
+    			String linha = arquivo.nextLine();
+    			if (!linha.trim().isEmpty()) {
+    				Pedido pedido = criarPedidoDoTexto(linha);
+    				if (pedido != null) {
+    					pilhaPedidos.empilhar(pedido);
+    				}
+    			}
+    		}
+    		
+    	} catch (IOException e) {
+    		System.out.println("Arquivo de pedidos não encontrado. Iniciando com pilha vazia.");
+    	} finally {
+    		if (arquivo != null) {
+    			arquivo.close();
+    		}
+    	}
+    }
+    
+    private static Pedido criarPedidoDoTexto(String linha) {
+    	
+    	try {
+    		String[] dados = linha.split(";");
+    		
+    		if (dados.length < 4) {
+    			return null;
+    		}
+    		
+    		LocalDate dataPedido = LocalDate.parse(dados[1]);
+    		int formaPagamento = Integer.parseInt(dados[2]);
+    		int quantProdutos = Integer.parseInt(dados[3]);
+    		
+    		Pedido pedido = new Pedido(dataPedido, formaPagamento);
+    		
+    		for (int i = 4; i < 4 + quantProdutos && i < dados.length; i++) {
+    			int idProduto = Integer.parseInt(dados[i]);
+    			for (int j = 0; j < quantosProdutos; j++) {
+    				if (produtosCadastrados[j].hashCode() == idProduto) {
+    					pedido.incluirProduto(produtosCadastrados[j]);
+    					break;
+    				}
+    			}
+    		}
+    		
+    		return pedido;
+    		
+    	} catch (Exception e) {
+    		System.err.println("Erro ao criar pedido do texto: " + e.getMessage());
+    		return null;
+    	}
+    }
+    
+    private static void salvarEmArquivo(String nomeArquivo, String conteudo) {
+    	
+    	try (java.io.FileWriter writer = new java.io.FileWriter(nomeArquivo)) {
+    		writer.write(conteudo);
+    	} catch (IOException e) {
+    		System.err.println("Erro ao salvar arquivo: " + e.getMessage());
+    	}
+    }
+    
 	public static void main(String[] args) {
 		
 		teclado = new Scanner(System.in, Charset.forName("UTF-8"));
         
+		// Primeiro, executar o teste da pilha com a matrícula
+		testarPilhaComMatricula();
+        pausa();
+		
+		// Depois, continuar com o menu principal
 		nomeArquivoDados = "produtos.txt";
         produtosCadastrados = lerProdutos(nomeArquivoDados);
         

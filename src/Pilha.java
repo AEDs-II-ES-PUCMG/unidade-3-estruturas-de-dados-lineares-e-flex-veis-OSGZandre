@@ -2,85 +2,79 @@ import java.util.NoSuchElementException;
 
 public class Pilha<E> {
 
-	private Celula<E> topo;
-	private Celula<E> fundo;
+    private Celula<E> topo;
+    private Celula<E> fundo;
 
-	public Pilha() {
+    public Pilha() {
 
-		Celula<E> sentinela = new Celula<E>();
-		fundo = sentinela;
-		topo = sentinela;
+        Celula<E> sentinela = new Celula<E>();
 
-	}
+        fundo = sentinela;
+        topo = sentinela;
+    }
 
-	public boolean vazia() {
-		return fundo == topo;
-	}
+    public boolean vazia() {
+        return fundo == topo;
+    }
 
-	public void empilhar(E item) {
+    public void empilhar(E item) {
 
-		topo = new Celula<E>(item, topo);
-	}
+        Celula<E> novaCelula = new Celula<>(item);
 
-	public E desempilhar() {
+        novaCelula.setProximo(topo);
 
-		E desempilhado = consultarTopo();
-		topo = topo.getProximo();
-		return desempilhado;
+        topo = novaCelula;
+    }
 
-	}
+    public E desempilhar() {
 
-	public E consultarTopo() {
+        E desempilhado = consultarTopo();
 
-		if (vazia()) {
-			throw new NoSuchElementException("Nao há nenhum item na pilha!");
-		}
+        topo = topo.getProximo();
 
-		return topo.getItem();
+        return desempilhado;
+    }
 
-	}
+    public E consultarTopo() {
 
-	/**
-	 * Cria e devolve uma nova pilha contendo os primeiros numItens elementos
-	 * do topo da pilha atual.
-	 * 
-	 * Os elementos são mantidos na mesma ordem em que estavam na pilha original.
-	 * Caso a pilha atual possua menos elementos do que o valor especificado,
-	 * uma exceção será lançada.
-	 *
-	 * @param numItens o número de itens a serem copiados da pilha original.
-	 * @return uma nova instância de Pilha<E> contendo os numItens primeiros elementos.
-	 * @throws IllegalArgumentException se a pilha não contém numItens elementos.
-	 */
-	public Pilha<E> subPilha(int numItens) {
-		
-		Pilha<E> pilhaTemp = new Pilha<>();
-		Pilha<E> subPilhaResultado = new Pilha<>();
-		
-		int contador = 0;
-		
-		// conta os elementos da pilha
-		Celula<E> atual = topo;
-		while (atual != fundo) {
-			contador++;
-			atual = atual.getProximo();
-		}
-		
-		if (numItens > contador) {
-			throw new IllegalArgumentException("A pilha não contém " + numItens + " elementos.");
-		}
-		
-		atual = topo;
-		for (int i = 0; i < numItens; i++) {
-			pilhaTemp.empilhar(atual.getItem());
-			atual = atual.getProximo();
-		}
-		
-		// transfere os elementos da pilha temporaria pra subPilha
-		while (!pilhaTemp.vazia()) {
-			subPilhaResultado.empilhar(pilhaTemp.desempilhar());
-		}
-		
-		return subPilhaResultado;
-	}
+        if (vazia()) {
+            throw new NoSuchElementException("Nao há nenhum item na pilha!");
+        }
+
+        return topo.getItem();
+    }
+
+    public Pilha<E> subPilha(int numItens) {
+
+        Pilha<E> pilhaTemp = new Pilha<>();
+        Pilha<E> subPilhaResultado = new Pilha<>();
+
+        int contador = 0;
+
+        Celula<E> atual = topo;
+
+        while (atual != fundo) {
+            contador++;
+            atual = atual.getProximo();
+        }
+
+        if (numItens > contador) {
+            throw new IllegalArgumentException(
+                "A pilha não contém " + numItens + " elementos."
+            );
+        }
+
+        atual = topo;
+
+        for (int i = 0; i < numItens; i++) {
+            pilhaTemp.empilhar(atual.getItem());
+            atual = atual.getProximo();
+        }
+
+        while (!pilhaTemp.vazia()) {
+            subPilhaResultado.empilhar(pilhaTemp.desempilhar());
+        }
+
+        return subPilhaResultado;
+    }
 }
