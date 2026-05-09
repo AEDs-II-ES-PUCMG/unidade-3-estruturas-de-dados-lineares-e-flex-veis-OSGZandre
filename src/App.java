@@ -463,6 +463,8 @@ public class App {
             pausa();
         }while(opcao != 0);       
 
-        teclado.close();    
+        teclado.close();
+		
     }
+	
 }
